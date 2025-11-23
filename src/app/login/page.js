@@ -1,0 +1,112 @@
+'use client';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Card from '@/components/ui/Card';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) throw error;
+
+      // Success! Redirect to dashboard
+      router.push('/dashboard');
+    } catch (err) {
+      if (err.message.includes('Email not confirmed')) {
+        setError('Lütfen önce e-posta adresinizi doğrulayın.');
+      } else if (err.message.includes('Invalid login credentials')) {
+        setError('E-posta veya şifre hatalı.');
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-20 flex items-center justify-center min-h-[80vh]">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">Tekrar Hoş Geldiniz</h1>
+          <p className="text-gray-400">Mağazanızı yönetmek için giriş yapın.</p>
+        </div>
+
+        <Card className="p-8">
+          <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <Input
+              label="E-posta Adresi"
+              name="email"
+              type="email"
+              placeholder="ornek@mail.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+
+            <Input
+              label="Şifre"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
+                <input type="checkbox" className="rounded bg-white/10 border-white/20" />
+                Beni hatırla
+              </label>
+              <Link href="#" className="text-primary hover:text-primary-glow">
+                Şifremi unuttum
+              </Link>
+            </div>
+
+            <Button className="w-full" size="lg" disabled={loading}>
+              {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-gray-400">
+            Hesabınız yok mu?{' '}
+            <Link href="/register" className="text-white font-medium hover:text-primary transition-colors">
+              Hemen kayıt olun
+            </Link>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
