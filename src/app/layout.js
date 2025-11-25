@@ -20,6 +20,9 @@ const inter = Inter({ subsets: ['latin'] }); // Initialize inter font
 export default function RootLayout({ children }) {
   return (
     <html lang="tr">
+      <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossOrigin="anonymous"></script>
+      </head>
       <body className={inter.className}>
         <LanguageProvider>
           <UserProvider>
